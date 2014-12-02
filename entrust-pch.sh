@@ -8,7 +8,6 @@
 TMP_BASE=/tmp/base$$.ldif.tmp
 TMP_EUSR=/tmp/eusr$$.ldif.tmp
 TMP_EPCH=/tmp/politicas$$.pch
-LDAP_HOST="ldap.seg-social.es"
 
 #--------------------------------------------------------------------------------
 # USED PROCS
@@ -45,6 +44,13 @@ MSK_TIME="+%Y%m%d"
 #--------------------------------------------------------------------------------
 # TODO: MODIFIABLE SECTION
 #--------------------------------------------------------------------------------
+# Configuration variables. Modify according to your installation values.
+# The ldap server where pky policies are written 
+#
+LDAP_HOST=<place-your-ldap-host>
+LDAP_BASE_DN=<place-your-base-dn-here>
+LDAP_SEARCH_BASE="cn=end user policy"
+
 SHARED_DIR=/apps/ucm/prdi00web/w0/descargas
 POLICY_NAME=politicas.pch
 POLICY_EPCH=${SHARED_DIR}/${POLICY_NAME}
@@ -123,9 +129,9 @@ LOCK() {
 # @desc:	Makes the ldap query in order to get entrustPolicyCertificate.
 #--------------------------------------------------------------------------------
 LDAPQUERY() {
-${LDAPSEARCH} -1 -LLL -x -b "o=seg-social,c=es" -h ${LDAP_HOST} "ou=sgi" entrustPolicyCertificate  > ${TMP_BASE}
+${LDAPSEARCH} -1 -LLL -x -b ${LDAP_BASE_DN} -h ${LDAP_HOST} ${LDAP_SEARCH_BASE} entrustPolicyCertificate  > ${TMP_BASE}
 LDAP_EXCEPTION $?
-${LDAPSEARCH} -1 -LLL -x -b "ou=sgi,o=seg-social,c=es" -h ${LDAP_HOST} "cn=end user policy" entrustPolicyCertificate  > ${TMP_EUSR}
+${LDAPSEARCH} -1 -LLL -x -b "ou=sgi,o=seg-social,c=es" -h ${LDAP_HOST} ${LDAP_ENDUSERPOLICY} entrustPolicyCertificate  > ${TMP_EUSR}
 LDAP_EXCEPTION $?
 }
 
@@ -170,7 +176,7 @@ PEM2PCH() {
 # 
 # @param: 
 # @return
-# @desc Deletes temporal files
+# @desc Convert the LDIF to PCH file
 #--------------------------------------------------------------------------------
 LDIF2PCH() {
 	P1_PATTERN=$1
